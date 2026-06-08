@@ -4,18 +4,18 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class MenuModel extends Model
+class TransactionModel extends Model
 {
-    protected $table            = 'menu';
+    protected $table            = 'transaksi';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
 
-    // Kolom-kolom yang diizinkan untuk diisi/dimanipulasi data-nya
-    protected $allowedFields    = ['nama', 'harga', 'kategori', 'image_url'];
+    protected $allowedFields    = ['tanggal', 'nama', 'level', 'payment_via', 'total'];
 
-    // Otomatis mencatat created_at dan updated_at saat data berubah
+    // Dates
     protected $useTimestamps = true;
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
+
 }

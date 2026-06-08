@@ -18,8 +18,22 @@ class MenuController extends BaseController
     // Tampilkan halaman utama views/menu.php dengan membawa data awal
     public function index()
     {
-        $data['menus'] = $this->menuModel->findAll();
+        $data = [
+            'activeMenu' => 'catalogue',
+            'pageTitle'  => 'Katalog Menu',
+            'title'      => 'CashFlow — Menu',
+            'menus'      => $this->menuModel->findAll()
+        ];
         return view('menu', $data);
+    }
+
+    public function get_all_json()
+    {
+        // Ambil data terbaru dari database
+        $menus = $this->menuModel->findAll();
+
+        // Kembalikan langsung dalam bentuk JSON murni
+        return $this->response->setJSON($menus);
     }
 
     // Proses Tambah & Update Menu via AJAX
@@ -31,6 +45,7 @@ class MenuController extends BaseController
         $harga        = $this->request->getPost('harga');
         $kategori     = $this->request->getPost('kategori');
         $old_image_url = $this->request->getPost('old_image_url'); // file lama jika proses edit
+
 
         if (empty($nama) || empty($harga)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Nama dan Harga wajib diisi.']);
@@ -98,6 +113,8 @@ class MenuController extends BaseController
         // Inisialisasi model
         $menuModel = new \App\Models\MenuModel();
 
+        // var_dump($id, $db_image_name);
+        // die;
         if (empty($id)) {
             // INSERT DATA BARU
             $menuModel->insert($dataSave);
