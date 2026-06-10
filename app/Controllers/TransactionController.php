@@ -99,4 +99,18 @@ class TransactionController extends BaseController
             'message'      => 'Transaksi berhasil disimpan!'
         ]);
     }
+
+    public function get_detail_json($id)
+{
+    // JOIN transaksidetail dengan menu untuk dapat nama, harga, image_url
+    $db = \Config\Database::connect();
+    $details = $db->table('transaksi_detail td')
+        ->select('td.menu_id, td.qty, m.nama, m.harga, m.image_url')
+        ->join('menu m', 'm.id = td.menu_id', 'left')
+        ->where('td.transaksi_id', $id)
+        ->get()
+        ->getResultArray();
+
+    return $this->response->setJSON($details);
+}
 }

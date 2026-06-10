@@ -66,7 +66,7 @@
                 <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
                     <div>
                         <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
-                            <span>Cash</span><span style="color:var(--accent);font-weight:600">52%</span>
+                            <span>Cash</span><span style="color:var(--accent);font-weight:600">70%</span>
                         </div>
                         <div style="background:var(--border);border-radius:20px;height:6px">
                             <div style="background:var(--accent);width:52%;height:100%;border-radius:20px"></div>
@@ -74,30 +74,20 @@
                     </div>
                     <div>
                         <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
-                            <span>Card</span><span style="color:var(--accent3);font-weight:600">30%</span>
+                            <span>QRIS</span><span style="color:var(--accent3);font-weight:600">30%</span>
                         </div>
                         <div style="background:var(--border);border-radius:20px;height:6px">
                             <div style="background:var(--accent3);width:30%;height:100%;border-radius:20px"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
-                            <span>E-Wallet</span><span style="color:var(--accent2);font-weight:600">18%</span>
-                        </div>
-                        <div style="background:var(--border);border-radius:20px;height:6px">
-                            <div style="background:var(--accent2);width:18%;height:100%;border-radius:20px"></div>
                         </div>
                     </div>
                 </div>
                 <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
                     <div class="chart-title" style="margin-bottom:8px">Top Category</div>
                     <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem">
-                        <div style="display:flex;justify-content:space-between"><span>☕ Beverages</span><span
+                        <div style="display:flex;justify-content:space-between"><span>☕ Minuman</span><span
                                 style="color:var(--accent2)">Rp 3.1M</span></div>
-                        <div style="display:flex;justify-content:space-between"><span>🍔 Food</span><span
+                        <div style="display:flex;justify-content:space-between"><span>🍔 Makanan</span><span
                                 style="color:var(--accent2)">Rp 2.8M</span></div>
-                        <div style="display:flex;justify-content:space-between"><span>🍰 Dessert</span><span
-                                style="color:var(--accent2)">Rp 1.5M</span></div>
                     </div>
                 </div>
             </div>
@@ -113,14 +103,12 @@
         <div class="table-responsive">
             <table class="dash-table">
                 <thead>
-                    <tr>
-                        <th>Order ID</th>
+                     <tr>
+                        <th>Tanggal</th>
                         <th>Customer</th>
-                        <th>Items</th>
-                        <th>Amount</th>
+                        <th>Level</th>
+                        <th>Total</th>
                         <th>Payment</th>
-                        <th>Status</th>
-                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody id="recentTxnBody"></tbody>
@@ -135,11 +123,11 @@
     // Script logic khusus kalkulasi bagan dashboard jalankan di sini
     
     let transactions = [
-      { id: 'TXN-0001', customer: 'Budi S.', items: [{ name: 'Iced Latte', qty: 2, price: 28000 }, { name: 'Cheesecake', qty: 1, price: 30000 }], total: 86000, payment: 'Cash', status: 'paid', time: '09:12' },
-      { id: 'TXN-0002', customer: 'Rina A.', items: [{ name: 'Chicken Burger', qty: 1, price: 45000 }, { name: 'Orange Juice', qty: 1, price: 20000 }], total: 71500, payment: 'Card', status: 'paid', time: '09:45' },
-      { id: 'TXN-0003', customer: 'Walk-in', items: [{ name: 'Matcha Latte', qty: 3, price: 32000 }], total: 96000, payment: 'E-Wallet', status: 'paid', time: '10:03' },
-      { id: 'TXN-0004', customer: 'Dewi M.', items: [{ name: 'Popcorn', qty: 2, price: 15000 }, { name: 'Mineral Water', qty: 2, price: 8000 }], total: 46000, payment: 'Cash', status: 'pending', time: '10:20' },
-      { id: 'TXN-0005', customer: 'Agus P.', items: [{ name: 'Fried Rice', qty: 1, price: 38000 }], total: 41800, payment: 'Card', status: 'void', time: '10:55' },
+      { id: '10-06-2026', customer: 'Budi S.', level: '0', total: 23000, payment: 'Cash'},
+      { id: '10-06-2026', customer: 'Andi', level: '1', total: 24000, payment: 'QRIS'},
+      { id: '10-06-2026', customer: 'Siti', level: '2', total: 20000, payment: 'QRIS'},
+      { id: '10-06-2026', customer: 'Aldo', level: '3', total: 30000, payment: 'Cash'},
+      { id: '10-06-2026', customer: 'Citra', level: '2', total: 35000, payment: 'Cash'},
     ];
 
     $(document).ready(function() {
@@ -184,11 +172,9 @@
             <tr>
             <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.id}</td>
             <td>${t.customer}</td>
-            <td style="color:var(--muted)">${t.items.length} item(s)</td>
+            <td style="color:var(--muted)">Lvl ${t.level}</td>
             <td style="font-weight:600">${fmt(t.total)}</td>
-            <td><span style="font-size:.78rem"><i class="fa-solid fa-${t.payment === 'Cash' ? 'money-bill-wave' : t.payment === 'Card' ? 'credit-card' : 'wallet'} me-1" style="color:var(--muted)"></i>${t.payment}</span></td>
-            <td><span class="status-pill ${t.status}">${t.status}</span></td>
-            <td style="color:var(--muted);font-size:.78rem">${t.time}</td>
+            <td><span style="font-size:.78rem"><i class="fa-solid fa-${t.payment === 'Cash' ? 'money-bill-wave' : 'wallet'} me-1" style="color:var(--muted)"></i>${t.payment}</span></td>
             </tr>`).join('');
     }
 </script>

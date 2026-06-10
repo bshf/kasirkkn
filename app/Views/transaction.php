@@ -69,8 +69,14 @@
                             </div>
                             <div class="mb-4">
                                 <label class="cf-label">Level</label>
-                                <input class="cf-input" id="levelInput" type="number" min="0" max="5" value="0"
-                                    placeholder="0" />
+                                <select class="cf-input" id="levelInput" name="levelInput">
+                                    <option value="0">0</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
                             </div>
 
                             <div class="mb-4">
@@ -135,84 +141,7 @@
     let cart = [];
     let txnCounter = 6;
     let products = <?= json_encode($menus ?? []) ?>;
-    let transactions = [{
-            id: 'TXN-0001',
-            customer: 'Budi S.',
-            items: [{
-                name: 'Iced Latte',
-                qty: 2,
-                price: 28000
-            }, {
-                name: 'Cheesecake',
-                qty: 1,
-                price: 30000
-            }],
-            total: 86000,
-            payment: 'Cash',
-            status: 'paid',
-            time: '09:12'
-        },
-        {
-            id: 'TXN-0002',
-            customer: 'Rina A.',
-            items: [{
-                name: 'Chicken Burger',
-                qty: 1,
-                price: 45000
-            }, {
-                name: 'Orange Juice',
-                qty: 1,
-                price: 20000
-            }],
-            total: 71500,
-            payment: 'Card',
-            status: 'paid',
-            time: '09:45'
-        },
-        {
-            id: 'TXN-0003',
-            customer: 'Walk-in',
-            items: [{
-                name: 'Matcha Latte',
-                qty: 3,
-                price: 32000
-            }],
-            total: 96000,
-            payment: 'E-Wallet',
-            status: 'paid',
-            time: '10:03'
-        },
-        {
-            id: 'TXN-0004',
-            customer: 'Dewi M.',
-            items: [{
-                name: 'Popcorn',
-                qty: 2,
-                price: 15000
-            }, {
-                name: 'Mineral Water',
-                qty: 2,
-                price: 8000
-            }],
-            total: 46000,
-            payment: 'Cash',
-            status: 'pending',
-            time: '10:20'
-        },
-        {
-            id: 'TXN-0005',
-            customer: 'Agus P.',
-            items: [{
-                name: 'Fried Rice',
-                qty: 1,
-                price: 38000
-            }],
-            total: 41800,
-            payment: 'Card',
-            status: 'void',
-            time: '10:55'
-        },
-    ];
+    let transactions = [];
 
     $(document).ready(function() {
         renderProductSelector()
@@ -245,15 +174,16 @@
                     <div class="p-name">${p.nama}</div>
                     <div class="p-price">${fmt(p.harga)}</div>
                     <div class="qty-ctrl mt-2">
-                    <button class="qty-btn" onclick="modifyProductQty(${p.id}, -1)">−</button>
+                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, -1)">−</button>
                     <span class="qty-num text-light" id="modal-qty-${p.id}">${qty}</span>
-                    <button class="qty-btn" onclick="modifyProductQty(${p.id}, 1)">+</button>
+                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, 1)">+</button>
                     </div>
                 </div>`;
         }).join('');
     }
 
     function modifyProductQty(productId, change) {
+        if (viewMode) return; // blokir perubahan saat mode view
         const product = products.find(p => p.id == productId);
         console.log('product', products, product, productId)
         if (!product) return;
@@ -408,8 +338,8 @@
                     <div class="r-title">CashFlow</div>
                     <div class="r-sub">${new Date().toLocaleDateString('id-ID')} ${now}</div>
                     <hr>
-                    <div class="r-row"><span>Order ID</span><span>#${response.transaksi_id}</span></div>
                     <div class="r-row"><span>Customer</span><span>${customer}</span></div>
+                    <div class="r-row"><span>Level</span><span>#${level}</span></div>
                     <div class="r-row"><span>Metode</span><span style="text-transform:uppercase">${paymentVia}</span></div>
                     <hr>
                     ${rows}
@@ -488,7 +418,7 @@
 
             return `
         <tr>
-          <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">TXN-${String(t.id).padStart(4, '0')}</td>
+          <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.tanggal}</td>
           <td>${t.nama || 'Customer'}</td>
           <td style="color:var(--muted)">Lvl ${t.level || 0}</td>
           <td style="font-weight:600">${fmt(t.total)}</td>
@@ -525,9 +455,117 @@
         </tr>`).join('');
     }
 
+    // ── VIEW TRANSACTION ──────────────────────────────────────────────────
+    // Mode: 'view'  → buka modal dalam mode lihat saja (tombol Payment diganti Close)
+    // Alur: fetch detail → isi cart dari transaksidetail → render grid semua menu
+    let viewMode = false; // flag global: true = sedang mode view, false = mode baru
+
     function viewTxn(id) {
-        toast('Viewing transaction ' + id);
+        // Cari data header transaksi dari array lokal yang sudah di-load
+        const txn = transactions.find(x => x.id == id);
+
+        // Aktifkan flag view mode agar processPayment diblokir
+        viewMode = true;
+
+        // Kosongkan cart terlebih dahulu
+        cart = [];
+
+        // Fetch detail item (transaksidetail JOIN menu) dari backend CI4
+        $.ajax({
+            url: '<?= base_url("transaction/get_detail_json") ?>/' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function(details) {
+                // details = array of { menu_id, qty, nama, harga, image_url, ... }
+                // Isi cart berdasarkan transaksidetail
+                details.forEach(function(d) {
+                    // Cari produk lengkapnya dari array products (sudah ada di halaman)
+                    const prod = products.find(p => p.id == d.menu_id);
+                    if (prod) {
+                        cart.push({ ...prod, qty: parseInt(d.qty) });
+                    } else {
+                        // Fallback jika produk tidak ada di array lokal (sudah dihapus, dll.)
+                        cart.push({
+                            id: d.menu_id,
+                            nama: d.nama || 'Menu #' + d.menu_id,
+                            harga: parseFloat(d.harga) || 0,
+                            image_url: d.image_url || null,
+                            qty: parseInt(d.qty)
+                        });
+                    }
+                });
+
+                // Isi header form dari data transaksi yang dipilih
+                if (txn) {
+                    $('#customerName').val(txn.nama || '');
+                    $('#levelInput').val(txn.level || 0);
+                    $('#pembayaran').val(txn.payment_via || 'cash');
+                }
+
+                // Render ulang grid produk — qty otomatis diambil dari cart
+                renderProductSelector($('#modalSearch').val());
+                updateSummary();
+
+                // Ubah tampilan modal ke mode View (non-editable)
+                _applyViewModeUI(true);
+
+                // Buka modal
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('addItemModal')).show();
+            },
+            error: function(xhr) {
+                viewMode = false;
+                toast('Gagal memuat detail transaksi.');
+                console.error(xhr.responseText);
+            }
+        });
     }
+
+    // Terapkan / batalkan perubahan UI untuk mode view
+    function _applyViewModeUI(isView) {
+        const $modal = $('#addItemModal');
+
+        if (isView) {
+            // Ganti judul modal
+            $modal.find('.modal-title').html('<i class="fa-solid fa-eye me-2" style="color:var(--accent)"></i>View Transaction');
+
+            // Nonaktifkan semua tombol qty di grid produk
+            $modal.find('.qty-btn').prop('disabled', true).css('opacity', '.4');
+
+            // Ganti tombol Payment → Close, sembunyikan Clear
+            $modal.find('.btn-accent[onclick="processPayment()"]')
+                .html('<i class="fa-solid fa-xmark me-2"></i>Close')
+                .attr('onclick', "bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide()");
+            $modal.find('.btn-ghost[onclick="clearCart()"]').hide();
+
+            // Nonaktifkan input form
+            $('#customerName, #levelInput, #pembayaran').prop('disabled', true);
+        } else {
+            // Kembalikan ke mode normal (Add / Edit)
+            $modal.find('.modal-title').html('<i class="fa-solid fa-cart-plus me-2" style="color:var(--accent)"></i>Select Products &amp; Checkout');
+            $modal.find('.qty-btn').prop('disabled', false).css('opacity', '');
+            $modal.find('.btn-accent[onclick*="hide()"]')
+                .html('<i class="fa-solid fa-credit-card me-2"></i>Payment')
+                .attr('onclick', 'processPayment()');
+            $modal.find('.btn-ghost').show();
+            $('#customerName, #levelInput, #pembayaran').prop('disabled', false);
+        }
+    }
+
+    // Reset mode saat modal ditutup agar modal "Add Item" normal kembali
+    document.getElementById('addItemModal').addEventListener('hidden.bs.modal', function() {
+        if (viewMode) {
+            viewMode = false;
+            cart = [];
+            renderProductSelector();
+            updateSummary();
+            // Kembalikan UI ke normal untuk next open
+            _applyViewModeUI(false);
+            // Reset form
+            $('#customerName').val('');
+            $('#levelInput').val(0);
+            $('#pembayaran').val('cash');
+        }
+    });
 
     function voidTxn(id) {
         const t = transactions.find(x => x.id === id);
