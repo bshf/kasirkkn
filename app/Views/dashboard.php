@@ -16,31 +16,31 @@
         <div class="col-6 col-lg-3">
             <div class="stat-card yellow">
                 <div class="stat-icon"><i class="fa-solid fa-coins"></i></div>
-                <div class="stat-value">Rp 8.4M</div>
-                <div class="stat-label">Revenue Today</div>
-                <div class="stat-change up"><i class="fa-solid fa-arrow-trend-up"></i> +12.4% vs yesterday</div>
+                <div class="stat-value" id="statRevenue"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
+                <div class="stat-label">Pendapatan Hari Ini</div>
+                <div class="stat-change up" id="statRevenueChange"><i class="fa-solid fa-minus"></i> —</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card green">
                 <div class="stat-icon"><i class="fa-solid fa-bag-shopping"></i></div>
-                <div class="stat-value">124</div>
-                <div class="stat-label">Orders Today</div>
-                <div class="stat-change up"><i class="fa-solid fa-arrow-trend-up"></i> +7 vs yesterday</div>
+                <div class="stat-value" id="statOrders"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
+                <div class="stat-label">Orderan Hari Ini</div>
+                <div class="stat-change up" id="statOrdersChange"><i class="fa-solid fa-minus"></i> —</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card purple">
                 <div class="stat-icon"><i class="fa-solid fa-box-open"></i></div>
-                <div class="stat-value">48</div>
-                <div class="stat-label">Products Listed</div>
-                <div class="stat-change up"><i class="fa-solid fa-arrow-trend-up"></i> +3 new items</div>
+                <div class="stat-value" id="statProducts"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
+                <div class="stat-label">Total Menu</div>
+                <div class="stat-change up"><i class="fa-solid fa-layer-group"></i> Total Menu</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card red">
                 <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div class="stat-value">5</div>
+                <div class="stat-value" id="statLowStock"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
                 <div class="stat-label">Low Stock Items</div>
                 <div class="stat-change down"><i class="fa-solid fa-arrow-trend-down"></i> Needs restock</div>
             </div>
@@ -53,43 +53,40 @@
     <div class="row g-3 mb-4">
         <div class="col-lg-8">
             <div class="chart-card">
-                <div class="chart-title">Weekly Revenue</div>
-                <div class="chart-subtitle">Sales performance over the past 7 days</div>
+                <div class="chart-title">Pendapatan Mingguan</div>
+                <div class="chart-subtitle">Performance penjualan selama 7 hari terakhir</div>
                 <div class="bar-chart" id="barChart"></div>
                 <div style="display:flex;gap:10px;margin-top:12px;justify-content:center" id="barLabels"></div>
             </div>
         </div>
         <div class="col-lg-4">
             <div class="chart-card h-100">
-                <div class="chart-title">Payment Breakdown</div>
-                <div class="chart-subtitle">Today's breakdown</div>
+                <div class="chart-title">Rincian Pembayaran</div>
+                <div class="chart-subtitle">Bulan ini</div>
                 <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
                     <div>
                         <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
-                            <span>Cash</span><span style="color:var(--accent);font-weight:600">70%</span>
+                            <span>Cash</span><span style="color:var(--accent);font-weight:600" id="pbCashPct">—</span>
                         </div>
                         <div style="background:var(--border);border-radius:20px;height:6px">
-                            <div style="background:var(--accent);width:52%;height:100%;border-radius:20px"></div>
+                            <div id="pbCashBar" style="background:var(--accent);width:0%;height:100%;border-radius:20px;transition:width .6s ease"></div>
                         </div>
                     </div>
                     <div>
                         <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:5px">
-                            <span>QRIS</span><span style="color:var(--accent3);font-weight:600">30%</span>
+                            <span>QRIS</span><span style="color:var(--accent3);font-weight:600" id="pbQrisPct">—</span>
                         </div>
                         <div style="background:var(--border);border-radius:20px;height:6px">
-                            <div style="background:var(--accent3);width:30%;height:100%;border-radius:20px"></div>
+                            <div id="pbQrisBar" style="background:var(--accent3);width:0%;height:100%;border-radius:20px;transition:width .6s ease"></div>
                         </div>
                     </div>
                 </div>
-                <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+                <!-- <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
                     <div class="chart-title" style="margin-bottom:8px">Top Category</div>
-                    <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem">
-                        <div style="display:flex;justify-content:space-between"><span>☕ Minuman</span><span
-                                style="color:var(--accent2)">Rp 3.1M</span></div>
-                        <div style="display:flex;justify-content:space-between"><span>🍔 Makanan</span><span
-                                style="color:var(--accent2)">Rp 2.8M</span></div>
+                    <div style="display:flex;flex-direction:column;gap:8px;font-size:.8rem" id="topCategoryList">
+                        <div style="color:var(--muted);font-size:.75rem">Loading…</div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -97,8 +94,8 @@
     <!-- Recent Transactions -->
     <div class="table-card">
         <div class="table-header">
-            <h5>Recent Transactions</h5>
-            <button class="btn-ghost" style="font-size:.75rem" onclick="navigate('transaction')">View All</button>
+            <h5>Transaksi Terbaru</h5>
+            <button class="btn-ghost" style="font-size:.75rem" onclick="navigate('transaction')">Lihat Semua</button>
         </div>
         <div class="table-responsive">
             <table class="dash-table">
@@ -120,62 +117,161 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    // Script logic khusus kalkulasi bagan dashboard jalankan di sini
-    
-    let transactions = [
-      { id: '10-06-2026', customer: 'Budi S.', level: '0', total: 23000, payment: 'Cash'},
-      { id: '10-06-2026', customer: 'Andi', level: '1', total: 24000, payment: 'QRIS'},
-      { id: '10-06-2026', customer: 'Siti', level: '2', total: 20000, payment: 'QRIS'},
-      { id: '10-06-2026', customer: 'Aldo', level: '3', total: 30000, payment: 'Cash'},
-      { id: '10-06-2026', customer: 'Citra', level: '2', total: 35000, payment: 'Cash'},
-    ];
+    // ─── HELPERS ──────────────────────────────────────────────────────────
+    // fmt() diasumsikan sudah didefinisikan di layouts/master (global helper)
 
-    $(document).ready(function() {
+    // ─── INIT ─────────────────────────────────────────────────────────────
+    $(document).ready(function () {
+        // Tampilkan tanggal hari ini
         const d = new Date();
-        $('#todayDate').text(d.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
+        $('#todayDate').text(d.toLocaleDateString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         }));
 
-        initDashboard();
+        // Muat semua data dashboard secara paralel via AJAX
+        loadDashboardStats();
+        loadWeeklyChart();
+        loadPaymentBreakdown();
+        loadRecentTransactions();
     });
 
-    function initDashboard() {
-        /* Bar chart */
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const vals = [5.2, 6.8, 4.9, 7.3, 8.1, 9.4, 8.4];
-        const max = Math.max(...vals);
-        const chart = document.getElementById('barChart');
-        const labels = document.getElementById('barLabels');
-        chart.innerHTML = '';
-        labels.innerHTML = '';
-        days.forEach((d, i) => {
-            const pct = (vals[i] / max) * 100;
-            const wrap = document.createElement('div');
-            wrap.className = 'bar-wrap';
-            wrap.innerHTML = `
-                <span style="font-size:.65rem;color:var(--muted)">${vals[i]}M</span>
-                <div class="bar${i === 6 ? ' highlight' : ''}" style="height:${pct}%" title="Rp ${vals[i]}M"></div>`;
-            chart.appendChild(wrap);
+    // ─── 1. STAT CARDS ────────────────────────────────────────────────────
+    function loadDashboardStats() {
+        $.ajax({
+            url: '<?= base_url("dashboard/get_stats") ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                // Revenue Today
+                $('#statRevenue').text(fmt(data.revenue_today));
+                $('#statRevenueChange')
+                    .html(`<i class="fa-solid fa-arrow-trend-${data.revenue_diff >= 0 ? 'up' : 'down'}"></i>
+                           ${data.revenue_diff >= 0 ? '+' : ''}${data.revenue_diff}% vs kemarin`)
+                    .removeClass('up down')
+                    .addClass(data.revenue_diff >= 0 ? 'up' : 'down');
 
-            const lbl = document.createElement('span');
-            lbl.style.cssText = `font-size:.65rem;color:var(--muted);flex:1;text-align:center`;
-            lbl.textContent = d;
-            labels.appendChild(lbl);
+                // Orders Today
+                $('#statOrders').text(data.orders_today);
+                $('#statOrdersChange')
+                    .html(`<i class="fa-solid fa-arrow-trend-${data.orders_diff >= 0 ? 'up' : 'down'}"></i>
+                           ${data.orders_diff >= 0 ? '+' : ''}${data.orders_diff} vs kemarin`)
+                    .removeClass('up down')
+                    .addClass(data.orders_diff >= 0 ? 'up' : 'down');
+
+                // Products Listed
+                $('#statProducts').text(data.total_products);
+
+                // Low Stock
+                $('#statLowStock').text(data.low_stock_count);
+            },
+            error: function () { console.error('Gagal memuat stats dashboard.'); }
         });
+    }
 
-        /* Recent table */
-        const tbody = document.getElementById('recentTxnBody');
-        tbody.innerHTML = transactions.slice(-5).reverse().map(t => `
-            <tr>
-            <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.id}</td>
-            <td>${t.customer}</td>
-            <td style="color:var(--muted)">Lvl ${t.level}</td>
-            <td style="font-weight:600">${fmt(t.total)}</td>
-            <td><span style="font-size:.78rem"><i class="fa-solid fa-${t.payment === 'Cash' ? 'money-bill-wave' : 'wallet'} me-1" style="color:var(--muted)"></i>${t.payment}</span></td>
-            </tr>`).join('');
+    // ─── 2. WEEKLY BAR CHART ──────────────────────────────────────────────
+    function loadWeeklyChart() {
+        $.ajax({
+            url: '<?= base_url("dashboard/get_weekly_chart") ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                // data = [{ day: 'Mon', label: '2026-06-09', total: 5200000 }, ...]
+                const vals   = data.map(d => d.total);
+                const max    = Math.max(...vals) || 1;
+                const todayIdx = data.length - 1; // hari terakhir = hari ini
+
+                const chart  = document.getElementById('barChart');
+                const labels = document.getElementById('barLabels');
+                chart.innerHTML  = '';
+                labels.innerHTML = '';
+
+                data.forEach(function (d, i) {
+                    const pct  = (d.total / max) * 100;
+                    const disp = d.total >= 1000000
+                        ? (d.total / 1000000).toFixed(1) + 'M'
+                        : (d.total >= 1000 ? (d.total / 1000).toFixed(0) + 'K' : d.total);
+
+                    const wrap = document.createElement('div');
+                    wrap.className = 'bar-wrap';
+                    wrap.innerHTML = `
+                        <span style="font-size:.65rem;color:var(--muted)">${disp}</span>
+                        <div class="bar${i === todayIdx ? ' highlight' : ''}"
+                             style="height:${Math.max(pct, 2)}%"
+                             title="${d.day}: ${fmt(d.total)}"></div>`;
+                    chart.appendChild(wrap);
+
+                    const lbl = document.createElement('span');
+                    lbl.style.cssText = 'font-size:.65rem;color:var(--muted);flex:1;text-align:center';
+                    lbl.textContent   = d.day;
+                    labels.appendChild(lbl);
+                });
+            },
+            error: function () { console.error('Gagal memuat chart mingguan.'); }
+        });
+    }
+
+    // ─── 3. PAYMENT BREAKDOWN ─────────────────────────────────────────────
+    function loadPaymentBreakdown() {
+        $.ajax({
+            url: '<?= base_url("dashboard/get_payment_breakdown") ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                // data = { cash: { count: 70, pct: 70 }, qris: { count: 30, pct: 30 } }
+                const cashPct = data.cash  ? data.cash.pct  : 0;
+                const qrisPct = data.qris  ? data.qris.pct  : 0;
+
+                $('#pbCashPct').text(cashPct + '%');
+                $('#pbCashBar').css('width', cashPct + '%');
+                $('#pbQrisPct').text(qrisPct + '%');
+                $('#pbQrisBar').css('width', qrisPct + '%');
+
+                // Top Category
+                if (data.top_categories && data.top_categories.length) {
+                    const emojis = { 'Minuman': '☕', 'Makanan': '🍔', 'Dessert': '🍰', 'Snack': '🍿' };
+                    $('#topCategoryList').html(
+                        data.top_categories.slice(0, 3).map(c => `
+                            <div style="display:flex;justify-content:space-between">
+                                <span>${emojis[c.kategori] || '🏷'} ${c.kategori}</span>
+                                <span style="color:var(--accent2)">${fmt(c.total)}</span>
+                            </div>`).join('')
+                    );
+                }
+            },
+            error: function () { console.error('Gagal memuat payment breakdown.'); }
+        });
+    }
+
+    // ─── 4. RECENT TRANSACTIONS TABLE ─────────────────────────────────────
+    function loadRecentTransactions() {
+        $.ajax({
+            url: '<?= base_url("dashboard/get_recent_transactions") ?>',
+            type: 'GET',
+            dataType: 'json',
+            success: function (list) {
+                const tbody = document.getElementById('recentTxnBody');
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Belum ada transaksi hari ini.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = list.map(t => {
+                    const icon = t.payment_via === 'cash' ? 'money-bill-wave' : 'qrcode';
+                    return `
+                        <tr>
+                          <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.tanggal}</td>
+                          <td>${t.nama || 'Customer'}</td>
+                          <td style="color:var(--muted)">Lvl ${t.level || 0}</td>
+                          <td style="font-weight:600">${fmt(t.total)}</td>
+                          <td>
+                            <span style="font-size:.78rem;text-transform:uppercase">
+                              <i class="fa-solid fa-${icon} me-1" style="color:var(--muted)"></i>${t.payment_via}
+                            </span>
+                          </td>
+                        </tr>`;
+                }).join('');
+            },
+            error: function () { console.error('Gagal memuat recent transactions.'); }
+        });
     }
 </script>
 <?= $this->endSection() ?>

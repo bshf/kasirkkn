@@ -126,7 +126,8 @@ class MenuController extends BaseController
                 'id'        => $insertedId,
                 'image_url' => $db_image_name ? base_url('uploads/menu/' . $db_image_name) : null,
                 'raw_name'  => $db_image_name, // simpan untuk data-attribute tombol edit
-                'message'   => 'Menu item added successfully!'
+                'message'   => 'Menu item added successfully!',
+                'token'   => csrf_hash()
             ]);
         } else {
             // UPDATE DATA LAMA
@@ -138,7 +139,8 @@ class MenuController extends BaseController
                 'id'        => $id,
                 'image_url' => $db_image_name ? base_url('uploads/menu/' . $db_image_name) : null,
                 'raw_name'  => $db_image_name,
-                'message'   => 'Menu item updated successfully!'
+                'message'   => 'Menu item updated successfully!',
+                'token'   => csrf_hash()
             ]);
         }
     }
@@ -159,7 +161,7 @@ class MenuController extends BaseController
             }
 
             $menuModel->delete($id);
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Item deleted.']);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Item deleted.','token'   => csrf_hash()]);
         }
         return $this->response->setJSON(['status' => 'error', 'message' => 'Not found.'], 404);
     }

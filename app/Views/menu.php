@@ -7,7 +7,7 @@
             <h2>Katalog</h2>
         </div>
         <button class="btn-accent" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="prepareAddModal()">
-            <i class="fa-solid fa-plus me-1"></i>Add Product
+            <i class="fa-solid fa-plus me-1"></i>Tambah Menu
         </button>
     </div>
 
@@ -24,7 +24,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-box me-2" style="color:var(--accent)"></i>Add New Product</h5>
+                    <h5 class="modal-title"><i class="fa-solid fa-box me-2" style="color:var(--accent)"></i>Tambah Menu Baru</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="crudForm" enctype="multipart/form-data">
@@ -38,8 +38,8 @@
                             <div class="col-6">
                                 <label class="cf-label">Kategori</label>
                                 <select class="cf-input" id="newProdCat" name="kategori">
-                                    <option value="makanan">Makanan</option>
-                                    <option value="minuman">Minuman</option>
+                                    <option value="MAKANAN">MAKANAN</option>
+                                    <option value="MINUMAN">MINUMAN</option>
                                 </select>
                             </div>
                             <div class="col-6">
@@ -56,15 +56,29 @@
                                     </div>
                                 </div>
                                 <input class="cf-input" id="newProdImage" name="food_image" type="file" accept="image/*" />
-                                <small class="text-muted d-block mt-1">Biarkan kosong jika tidak ingin mengubah/menambahkan gambar.</small>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn-accent" id="btnSaveProduct"><i class="fa-solid fa-plus me-1"></i>Save Product</button>
+                        <button class="btn-ghost" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn-accent" id="btnSaveProduct"><i class="fa-solid fa-plus me-1"></i>Simpan Menu</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center p-3">
+            <div class="modal-body">
+                <i class="fa-solid fa-triangle-exclamation text-warning mb-3" style="font-size: 3rem;"></i>
+                <h5>Hapus Menu?</h5>
+                <p class="small">Apakah Anda yakin ingin menghapus menu ini <strong id="deleteTargetId"></strong>?</p>
+            </div>
+            <div class="d-flex gap-2 px-3 pb-2">
+                <button type="button" class="btn-ghost w-50" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn-accent w-50 bg-danger border-danger" id="btnExecuteDelete">Ya, Hapus</button>
             </div>
         </div>
     </div>
@@ -233,6 +247,9 @@
             url: '<?= base_url("menu/save") ?>', // Mengarah ke MenuController::save
             type: 'POST',
             data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="X-CSRF-TOKEN"]').attr('content')
+            },
             contentType: false,
             processData: false,
             dataType: 'json',
@@ -241,16 +258,10 @@
             },
             success: function(response) {
                 if (response.status === 'success') {
-                    // Tutup Bootstrap Modal
-                    const modalEl = document.getElementById('addProductModal');
-                    if (modalEl) {
-                        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                        if (modalInstance) modalInstance.hide();
-                    }
-
                     toast(response.message);
 
                     // ── PERBAIKAN: Reset form dan ambil data terbaru tanpa reload halaman ──
+                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
                     $('#crudForm')[0].reset();
                     fetchProducts();
                 } else {
@@ -262,33 +273,48 @@
                 console.error(xhr.responseText);
             },
             complete: function() {
-                $('#btnSaveProduct').prop('disabled', false).html('<i class="fa-solid fa-plus me-1"></i>Save Product');
+                $('#btnSaveProduct').prop('disabled', false).html('<i class="fa-solid fa-plus me-1"></i>Simpan Menu');
             }
         });
     }
 
     // Fungsi Hapus Produk via AJAX Terhubung ke Controller delete()
     function deleteProduct(id) {
-        if (confirm('Are you sure you want to delete this item?')) {
+        const prd = products.find(x => x.id == id);
+
+        let namaProduk = prd ? prd.nama : '';
+        $('#deleteTargetId').text(namaProduk);
+        const confirmModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmDeleteModal'));
+        confirmModal.show();
+
+        // 3. Set action ketika tombol "Ya, Hapus" di dalam modal diklik
+        $('#btnExecuteDelete').off('click').on('click', function() {
             $.ajax({
                 url: '<?= base_url("menu/delete") ?>/' + id,
-                type: 'DELETE', // Atau POST sesuai kecocokan routing sistem Anda
+                type: 'DELETE',
                 dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="X-CSRF-TOKEN"]').attr('content')
+                },
                 success: function(response) {
+                    confirmModal.hide(); // Tutup modal konfirmasi
+
                     if (response.status === 'success') {
                         toast(response.message);
-
                         fetchProducts();
                     } else {
                         toast('Error: ' + response.message);
                     }
+
+                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
                 },
                 error: function(xhr) {
-                    toast('Failed to delete item.');
+                    confirmModal.hide();
+                    toast('Gagal memproses penghapusan transaksi.');
                     console.error(xhr.responseText);
                 }
             });
-        }
+        });
     }
 </script>
 <?= $this->endSection() ?>

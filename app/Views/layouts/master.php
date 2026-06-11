@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="X-CSRF-TOKEN" content="<?= csrf_hash() ?>" />
     <title><?= $title ?></title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
@@ -34,6 +35,9 @@
             </a>
             <a href="<?= base_url('transaction') ?>" class="nav-item <?= ($activeMenu == 'transaction') ? 'active' : '' ?>" data-page="transaction">
                 <i class="fa-solid fa-receipt"></i> Transaction
+            </a>
+            <a href="<?= base_url('logout') ?>" class="nav-item">
+                <i class="fa-solid fa-sign-out"></i> Logout
             </a>
         </div>
 

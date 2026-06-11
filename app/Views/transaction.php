@@ -18,7 +18,7 @@
         <div class="table-header">
             <h5>Transaction History</h5>
             <div style="display:flex;gap:8px">
-                <input class="cf-input" style="max-width:180px;padding:7px 12px" type="text" placeholder="Search…" />
+                <input class="cf-input" id="txnSearch" style="max-width:180px;padding:7px 12px" type="text" placeholder="Search…" />
                 <button class="btn-ghost" style="font-size:.75rem"><i class="fa-solid fa-filter me-1"></i>Filter</button>
             </div>
         </div>
@@ -82,8 +82,8 @@
                             <div class="mb-4">
                                 <label class="cf-label">Pembayaran</label>
                                 <select class="cf-input" id="pembayaran" name="pembayaran">
-                                    <option value="cash">CASH</option>
-                                    <option value="qris">QRIS</option>
+                                    <option value="CASH">CASH</option>
+                                    <option value="QRIS">QRIS</option>
                                 </select>
                             </div>
                         </div>
@@ -134,6 +134,21 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center p-3">
+            <div class="modal-body">
+                <i class="fa-solid fa-triangle-exclamation text-warning mb-3" style="font-size: 3rem;"></i>
+                <h5>Hapus Transaksi?</h5>
+                <p class="small">Apakah Anda yakin ingin membatalkan transaksi <strong id="deleteTargetId"></strong>?</p>
+            </div>
+            <div class="d-flex gap-2 px-3 pb-2">
+                <button type="button" class="btn-ghost w-50" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn-accent w-50 bg-danger border-danger" id="btnExecuteDelete">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -146,6 +161,27 @@
     $(document).ready(function() {
         renderProductSelector()
         fetchTransactionHistory();
+        $('#txnSearch').on('input', function() {
+            const q = $(this).val().trim().toLowerCase();
+            const filtered = q ?
+                transactions.filter(t =>
+                    (t.tanggal || '').toLowerCase().includes(q) ||
+                    (t.nama || '').toLowerCase().includes(q) ||
+                    (t.payment_via || '').toLowerCase().includes(q) ||
+                    String(t.level || '').includes(q) ||
+                    String(t.total || '').includes(q)
+                ) :
+                transactions;
+            renderTxnHistoryFromDB(filtered, q);
+        });
+    })
+
+    $('#modalSearch').on('input', function() {
+        renderProductSelector($(this).val().trim());
+    });
+    $('#addItemModal').on('shown.bs.modal', () => {
+        $('#modalSearch').val('');
+        renderProductSelector();
     })
 
     function renderProductSelector(filter = '') {
@@ -313,6 +349,9 @@
             data: JSON.stringify(payload),
             contentType: 'application/json', // Menandakan bahwa kita mengirim data bertipe JSON string
             dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="X-CSRF-TOKEN"]').attr('content')
+            },
             beforeSend: function() {
                 // Nonaktifkan tombol sementara agar tidak terjadi double-input transaksi
                 $('.mt-auto .btn-accent').prop('disabled', true).text('Processing...');
@@ -321,6 +360,7 @@
                 if (response.status === 'success') {
                     toast(response.message);
 
+                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
                     // Ambil waktu realtime saat ini untuk cetak struk nota visual
                     const now = new Date().toLocaleTimeString('id-ID', {
                         hour: '2-digit',
@@ -353,9 +393,14 @@
                     if (typeof renderCart === "function") renderCart();
                     if (typeof renderProductSelector === "function") renderProductSelector();
 
+                    $('#customerName').val('');
+                    $('#levelInput').val('0');
+                    $('#pembayaran').val('cash');
+                    $('#modalSearch').val('');
                     // Tutup modal belanja & tampilkan modal struk sukses pembayaran
-                    bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal')).show();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal'), {
+                        backdrop: false
+                    }).show();
 
                     // Fungsi opsional untuk memuat ulang riwayat tabel di halaman utama transaksi jika ada
                     if (typeof fetchTransactionHistory === "function") {
@@ -399,41 +444,54 @@
         });
     }
 
-    function renderTxnHistoryFromDB(list) {
+    function renderTxnHistoryFromDB(list, query = '') {
         const tbody = document.getElementById('txnHistoryBody');
         if (!tbody) return;
 
         if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Belum ada riwayat transaksi.</td></tr>`;
+            const msg = query ?
+                `Tidak ada transaksi yang cocok dengan <strong>"${query}"</strong>` :
+                'Belum ada riwayat transaksi.';
+            tbody.innerHTML = `
+                <tr>
+                  <td colspan="6" class="text-center py-4" style="color:var(--muted)">
+                    <i class="fa-solid fa-magnifying-glass" style="display:block;font-size:1.6rem;opacity:.3;margin-bottom:8px"></i>
+                    <span style="font-size:.83rem">${msg}</span>
+                  </td>
+                </tr>`;
             return;
         }
 
-        tbody.innerHTML = list.map(t => {
-            // Format tanggal dari database (YYYY-MM-DD HH:MM:SS) menjadi jam menit saja (HH:MM)
-            const timeFormatted = t.tanggal ? t.tanggal.substring(11, 16) : '--:--';
+        // Helper: wrap matched text with a highlight span
+        function hl(text, q) {
+            if (!q || !text) return text ?? '';
+            const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return String(text).replace(new RegExp(`(${escaped})`, 'gi'),
+                '<mark style="background:rgba(240,180,41,.3);color:var(--accent);border-radius:3px;padding:0 2px">$1</mark>');
+        }
 
-            // Ikon dinamis berdasarkan tipe pembayaran
-            const pMethod = t.payment_via.toLowerCase();
+        tbody.innerHTML = list.map(t => {
+            const pMethod = (t.payment_via || '').toLowerCase();
             const icon = pMethod === 'cash' ? 'money-bill-wave' : (pMethod === 'qris' ? 'qrcode' : 'credit-card');
 
             return `
-        <tr>
-          <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.tanggal}</td>
-          <td>${t.nama || 'Customer'}</td>
-          <td style="color:var(--muted)">Lvl ${t.level || 0}</td>
-          <td style="font-weight:600">${fmt(t.total)}</td>
-          <td>
-            <span style="font-size:.78rem; text-transform: uppercase;">
-                <i class="fa-solid fa-${icon} me-1" style="color:var(--muted)"></i>${t.payment_via}
-            </span>
-          </td>
-          <td>
-            <div style="display:flex;gap:6px">
-              <button class="btn-sm-icon" title="View" onclick="viewTxn('${t.id}')"><i class="fa-solid fa-eye"></i></button>
-              <button class="btn-sm-icon danger" title="Void" onclick="voidTxn('${t.id}')"><i class="fa-solid fa-ban"></i></button>
-            </div>
-          </td>
-        </tr>`;
+                <tr>
+                <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${hl(t.tanggal, query)}</td>
+                <td>${hl(t.nama || 'Customer', query)}</td>
+                <td style="color:var(--muted)">Lvl ${hl(t.level ?? 0, query)}</td>
+                <td style="font-weight:600">${fmt(t.total)}</td>
+                <td>
+                    <span style="font-size:.78rem;text-transform:uppercase">
+                    <i class="fa-solid fa-${icon} me-1" style="color:var(--muted)"></i>${hl(t.payment_via, query)}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex;gap:6px">
+                    <button class="btn-sm-icon" title="View" onclick="viewTxn('${t.id}')"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn-sm-icon danger" title="Void" onclick="voidTxn('${t.id}')"><i class="fa-solid fa-ban"></i></button>
+                    </div>
+                </td>
+                </tr>`;
         }).join('');
     }
 
@@ -482,7 +540,10 @@
                     // Cari produk lengkapnya dari array products (sudah ada di halaman)
                     const prod = products.find(p => p.id == d.menu_id);
                     if (prod) {
-                        cart.push({ ...prod, qty: parseInt(d.qty) });
+                        cart.push({
+                            ...prod,
+                            qty: parseInt(d.qty)
+                        });
                     } else {
                         // Fallback jika produk tidak ada di array lokal (sudah dihapus, dll.)
                         cart.push({
@@ -568,12 +629,41 @@
     });
 
     function voidTxn(id) {
-        const t = transactions.find(x => x.id === id);
-        if (t) {
-            t.status = 'void';
-            fetchTransactionHistory();
-            toast(id + ' marked as void.');
-        }
+        // 1. Tampilkan ID transaksi di dalam teks modal
+        $('#deleteTargetId').text('#' + id);
+
+        // 2. Munculkan modal Bootstrap secara programatik
+        const confirmModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('confirmDeleteModal'));
+        confirmModal.show();
+
+        // 3. Set action ketika tombol "Ya, Hapus" di dalam modal diklik
+        $('#btnExecuteDelete').off('click').on('click', function() {
+            $.ajax({
+                url: '<?= base_url("transaction/delete") ?>/' + id,
+                type: 'DELETE',
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="X-CSRF-TOKEN"]').attr('content')
+                },
+                success: function(response) {
+                    confirmModal.hide(); // Tutup modal konfirmasi
+
+                    if (response.status === 'success') {
+                        toast(response.message);
+                        fetchTransactionHistory();
+                    } else {
+                        toast('Error: ' + response.message);
+                    }
+
+                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
+                },
+                error: function(xhr) {
+                    confirmModal.hide();
+                    toast('Gagal memproses penghapusan transaksi.');
+                    console.error(xhr.responseText);
+                }
+            });
+        });
     }
 
     function printReceipt() {
