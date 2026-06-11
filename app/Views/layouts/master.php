@@ -71,14 +71,14 @@
     <script>
         const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
         const genId = () => 'TXN-' + String(txnCounter).padStart(4, '0');
-        $('#sidebarToggle').on('click', function() {
-            $('#sidebar').toggleClass('open');
-            $('#overlay').toggleClass('show');
-        });
-        $('#overlay').on('click', function() {
-            $('#sidebar').removeClass('open');
-            $('#overlay').removeClass('show');
-        });
+        // $('#sidebarToggle').on('click', function() {
+        //     $('#sidebar').toggleClass('open');
+        //     $('#overlay').toggleClass('show');
+        // });
+        // $('#overlay').on('click', function() {
+        //     $('#sidebar').removeClass('open');
+        //     $('#overlay').removeClass('show');
+        // });
 
         function toast(msg) {
             const t = document.createElement('div');
