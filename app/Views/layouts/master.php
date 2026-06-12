@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="X-CSRF-TOKEN" content="<?= csrf_hash() ?>" />
     <title><?= $title ?></title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" /> -->
+    <!-- <link
         href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
-        rel="stylesheet" />
+        rel="stylesheet" /> -->
 
+    <link rel="stylesheet" href="<?= base_url('css/bootstrap.min.css') ?>" />
+    <link rel="stylesheet" href="<?= base_url('fontawesome/css/all.min.css') ?>" />
     <link rel="stylesheet" href="<?= base_url('css/styles.css') ?>" />
 </head>
 
@@ -66,8 +68,8 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= base_url('js/jquery.min.js') ?>"></script>
+    <script src="<?= base_url('js/bootstrap.bundle.min.js') ?>"></script>
     <script>
         const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
         const genId = () => 'TXN-' + String(txnCounter).padStart(4, '0');

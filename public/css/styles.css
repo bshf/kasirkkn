@@ -19,6 +19,21 @@
   text-transform: uppercase;
 }
 
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/syne-v24-latin-regular.woff2') format('woff2'); 
+}
+
+/* dm-sans-regular */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/dm-sans-v17-latin-regular.woff2') format('woff2'); 
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
