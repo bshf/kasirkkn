@@ -39,6 +39,11 @@ class CreateTransaksiTable extends Migration
                 'unsigned'       => true,
                 'default'        => 0,
             ],
+            'bayar' => [
+                'type'           => 'FLOAT',
+                'unsigned'       => true,
+                'default'        => 0,
+            ],
             'created_at' => [
                 'type'           => 'DATETIME',
                 'null'           => true,

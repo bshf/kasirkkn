@@ -11,7 +11,7 @@ class TransactionModel extends Model
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
 
-    protected $allowedFields    = ['tanggal', 'nama', 'level', 'payment_via', 'total'];
+    protected $allowedFields    = ['tanggal', 'nama', 'level', 'payment_via', 'total', 'bayar'];
 
     // Dates
     protected $useTimestamps = true;

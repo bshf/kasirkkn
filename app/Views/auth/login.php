@@ -10,15 +10,16 @@
   <link rel="stylesheet" href="<?= base_url('css/styles.css') ?>" />
   <style>
     :root {
-      --bg: #0d0f14;
-      --surface: #161a23;
-      --card: #1c2130;
-      --border: #252c3d;
-      --accent: #f0b429;
-      --accent2: #3ecf8e;
-      --danger: #f05252;
-      --text: #e8eaf0;
-      --muted: #7a839a;
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --accent: #f0a500;
+      --accent2: #2ec4b6;
+      --accent3: #6c5ce7;
+      --danger: #e74c3c;
+      --text: #2d3748;
+      --muted: #718096;
     }
 
     *,

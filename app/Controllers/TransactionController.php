@@ -31,9 +31,12 @@ class TransactionController extends BaseController
 
     public function get_all_json()
     {
+        $tanggalFilter = $this->request->getGet('tanggal');
         // Ambil data terbaru dari database
         $transactions = $this->transaksiModel
+            ->select("transaksi.*, DATE_FORMAT(transaksi.tanggal, '%d-%m-%Y') as tanggal")
             ->orderBy('tanggal', 'DESC')
+            ->where('tanggal', $tanggalFilter)
             ->get()
             ->getResultArray();
 
@@ -59,9 +62,9 @@ class TransactionController extends BaseController
         $dataTransaksi = [
             'tanggal'     => date('Y-m-d'),
             'nama'        => $json['nama'],
-            'level'       => $json['level'],
             'payment_via' => $json['payment_via'],
             'total'       => $json['total'],
+            'bayar'       => $json['bayar'],
             'created_at'  => date('Y-m-d H:i:s'),
             'updated_at'  => date('Y-m-d H:i:s')
         ];
@@ -142,5 +145,45 @@ class TransactionController extends BaseController
                 'token'   => csrf_hash()
             ]);
         }
+    }
+
+    public function struk($id)
+    {
+        $model = new TransactionModel();
+        $transaksi = $model->find($id);
+
+        if (!$transaksi) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'success' => false,
+                'message' => 'Transaksi tidak ditemukan',
+            ]);
+        }
+        $db = \Config\Database::connect();
+        $items = $db->table('transaksi_detail td')
+            ->select('td.menu_id, td.qty, m.nama, m.harga, m.image_url')
+            ->join('menu m', 'm.id = td.menu_id', 'left')
+            ->where('td.transaksi_id', $id)
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON([
+            'success'   => true,
+            'toko'      => [
+                'nama'    => 'Dimsum Gendhis',
+                'alamat'  => 'Jl. Cinta Karya, Sari Rejo, Medan Polonia',
+            ],
+            'tanggal'      => date('d-m-Y H:i:s', strtotime($transaksi['created_at'])),
+            'items'        => array_map(function ($item) {
+                return [
+                    'nama'  => $item['nama'],
+                    'qty'   => $item['qty'],
+                    'harga' => $item['harga'],
+                    'subtotal' => $item['qty'] * $item['harga'],
+                ];
+            }, $items),
+            'total'     => $transaksi['total'],
+            'bayar'     => $transaksi['bayar'],
+            'kembalian' => $transaksi['bayar'] - $transaksi['total'],
+        ]);
     }
 }

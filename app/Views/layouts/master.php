@@ -70,6 +70,7 @@
 
     <script src="<?= base_url('js/jquery.min.js') ?>"></script>
     <script src="<?= base_url('js/bootstrap.bundle.min.js') ?>"></script>
+    <script src="<?= base_url('js/bluetooth-printer.js') ?>"></script>
     <script>
         const fmt = n => 'Rp ' + Number(n).toLocaleString('id-ID');
         const genId = () => 'TXN-' + String(txnCounter).padStart(4, '0');

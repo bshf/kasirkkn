@@ -1,14 +1,14 @@
 :root {
-  --bg: #0d0f14;
-  --surface: #161a23;
-  --card: #1c2130;
-  --border: #252c3d;
-  --accent: #f0b429;
-  --accent2: #3ecf8e;
-  --accent3: #7c6af7;
-  --danger: #f05252;
-  --text: #e8eaf0;
-  --muted: #7a839a;
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #f0a500;
+  --accent2: #2ec4b6;
+  --accent3: #6c5ce7;
+  --danger: #e74c3c;
+  --text: #2d3748;
+  --muted: #718096;
   --sidebar-w: 240px;
 }
 
@@ -23,7 +23,7 @@
   font-family: 'Syne';
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/syne-v24-latin-regular.woff2') format('woff2'); 
+  src: url('../fonts/syne-v24-latin-regular.woff2') format('woff2');
 }
 
 /* dm-sans-regular */
@@ -31,7 +31,7 @@
   font-family: 'DM Sans';
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/dm-sans-v17-latin-regular.woff2') format('woff2'); 
+  src: url('../fonts/dm-sans-v17-latin-regular.woff2') format('woff2');
 }
 
 body {
@@ -193,7 +193,7 @@ a {
 .topbar {
   position: sticky;
   top: 0;
-  background: rgba(13, 15, 20, .85);
+  background: var(--surface);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 14px 28px;
@@ -614,7 +614,7 @@ table.dash-table {
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
-  color: var(--muted);
+  color: var(--text);
   font-size: .82rem;
   padding: 8px 14px;
   border-radius: 8px;
@@ -665,7 +665,7 @@ table.dash-table {
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
   margin-bottom: 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
@@ -674,7 +674,7 @@ table.dash-table {
 .cf-label {
   font-size: .78rem;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--text);
   margin-bottom: 6px;
   display: block;
 }
@@ -786,11 +786,7 @@ select.cf-input option {
 }
 
 .btn-close {
-  filter: invert(1) opacity(.5);
-}
-
-.btn-close:hover {
-  filter: invert(1) opacity(1);
+  /* filter: invert(1) opacity(.5); */
 }
 
 .modal-body {

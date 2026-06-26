@@ -103,7 +103,6 @@
                      <tr>
                         <th>Tanggal</th>
                         <th>Customer</th>
-                        <th>Level</th>
                         <th>Total</th>
                         <th>Payment</th>
                     </tr>
@@ -260,7 +259,6 @@
                         <tr>
                           <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.tanggal}</td>
                           <td>${t.nama || 'Customer'}</td>
-                          <td style="color:var(--muted)">Lvl ${t.level || 0}</td>
                           <td style="font-weight:600">${fmt(t.total)}</td>
                           <td>
                             <span style="font-size:.78rem;text-transform:uppercase">

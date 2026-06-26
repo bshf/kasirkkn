@@ -8,12 +8,21 @@
             <h2>Transaction</h2>
             <p>Create and manage sales transactions</p>
         </div>
-        <button class="btn-accent" data-bs-toggle="modal" data-bs-target="#addItemModal">
-            <i class="fa-solid fa-cart-plus me-1"></i>Add Item
-        </button>
+        <div>
+            <button class="btn-accent" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                <i class="fa-solid fa-cart-plus me-1"></i>Add Item
+            </button>
+            <button class="btn-accent" onclick="printerConnection.connect().then(() => alert('Printer terhubung!')).catch(e => alert(e.message))">
+            <i class="fa-solid fa-feed me-1"></i> Hubungkan Printer
+            </button>
+        </div>
     </div>
+    
 
     <!-- Transaction History -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+        <input type="date" id="filterTanggal" value="<?= date('Y-m-d'); ?>" class="form-control" style="width: 180px;">
+    </div>
     <div class="table-card mt-4">
         <div class="table-header">
             <h5>Transaction History</h5>
@@ -28,7 +37,6 @@
                     <tr>
                         <th>Tanggal</th>
                         <th>Customer</th>
-                        <th>Level</th>
                         <th>Total</th>
                         <th>Payment</th>
                         <th>Action</th>
@@ -60,23 +68,12 @@
 
                     <!-- Right side: Running invoice summary (No Payment Method - Scrollable Items List) -->
                     <div
-                        class="col-lg-4 d-flex flex-column h-100 justify-content-between border-start border-secondary-subtle ps-lg-4">
+                        class="col-lg-4 d-flex flex-column justify-content-between border-start border-secondary-subtle ps-lg-4">
                         <div>
                             <p class="form-section-title">Order </p>
                             <div class="mb-3">
                                 <label class="cf-label">Nama Customer</label>
-                                <input class="cf-input" id="customerName" placeholder="Putri" />
-                            </div>
-                            <div class="mb-4">
-                                <label class="cf-label">Level</label>
-                                <select class="cf-input" id="levelInput" name="levelInput">
-                                    <option value="0">0</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                </select>
+                                <input class="cf-input" id="customerName" />
                             </div>
 
                             <div class="mb-4">
@@ -97,7 +94,11 @@
                             </div>
 
                             <div class="summary-row total mb-3"><span>Total</span><span class="val" id="sumTotal">Rp 0</span></div>
-
+                            <div class="mb-3">
+                                <label class="cf-label">Bayar</label>
+                                <input class="cf-input" id="bayar" placeholder="0" style="text-align: right;"/>
+                            </div>
+                            <div class="summary-row total mb-3"><span>Kembalian</span><span class="val" id="kembalian">Rp 0</span></div>
                             <div class="d-flex gap-2">
                                 <button class="btn-ghost w-50" onclick="clearCart()" style="padding:10px">
                                     <i class="fa-solid fa-trash me-1"></i>Clear
@@ -149,9 +150,12 @@
         </div>
     </div>
 </div>
+
+<p id="printStatus" style="font-size:.8rem;color:#777;"></p>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
+<script src="https://unpkg.com/@point-of-sale/receipt-printer-encoder@latest/dist/receipt-printer-encoder.umd.js"></script>
 <script>
     let cart = [];
     let txnCounter = 6;
@@ -168,14 +172,47 @@
                     (t.tanggal || '').toLowerCase().includes(q) ||
                     (t.nama || '').toLowerCase().includes(q) ||
                     (t.payment_via || '').toLowerCase().includes(q) ||
-                    String(t.level || '').includes(q) ||
                     String(t.total || '').includes(q)
                 ) :
                 transactions;
             renderTxnHistoryFromDB(filtered, q);
         });
     })
+    $('#filterTanggal').on('change', function() {
+        fetchTransactionHistory();
+    });
+    $('#bayar').on('input', function() {
+        kembalian();
+    });
+    function kembalian() {
+        let totalText = $('#sumTotal').text();
+        let total = parseInt(totalText.replace(/[^0-9]/g, '')) || 0;
+        let bayar = parseInt($('#bayar').val()) || 0;
+        let kembalian = bayar - total;
+        if (kembalian < 0) {
+            kembalian = 0;
+        }
 
+        $('#kembalian').text('Rp ' + kembalian.toLocaleString('id-ID'));
+    }
+    function kembalian() {
+        let inputVal = $('#bayar').val().replace(/[^0-9]/g, '');
+        
+        let bayar = parseInt(inputVal) || 0;
+
+        if (inputVal !== '') {
+            $('#bayar').val(bayar.toLocaleString('id-ID'));
+        } else {
+            $('#bayar').val('');
+        }
+        let totalText = $('#sumTotal').text();
+        let total = parseInt(totalText.replace(/[^0-9]/g, '')) || 0;
+        let kembalian = bayar - total;
+        if (kembalian < 0) {
+            kembalian = 0;
+        }
+        $('#kembalian').text('Rp ' + kembalian.toLocaleString('id-ID'));
+    }
     $('#modalSearch').on('input', function() {
         renderProductSelector($(this).val().trim());
     });
@@ -211,7 +248,7 @@
                     <div class="p-price">${fmt(p.harga)}</div>
                     <div class="qty-ctrl mt-2">
                     <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, -1)">−</button>
-                    <span class="qty-num text-light" id="modal-qty-${p.id}">${qty}</span>
+                    <span class="qty-num text-dark" id="modal-qty-${p.id}">${qty}</span>
                     <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, 1)">+</button>
                     </div>
                 </div>`;
@@ -308,14 +345,15 @@
             <div class="active-item-row">
                 <div>
                 <span class="qty-badge">x${c.qty}</span>
-                <span> ${c.nama}</span>
+                <span style="font-weight:500;color:var(--text)"> ${c.nama}</span>
                 </div>
-                <span style="font-weight:500;color:var(--muted)">${fmt(c.harga * c.qty)}</span>
+                <span style="font-weight:500;color:var(--text)">${fmt(c.harga * c.qty)}</span>
             </div>
             `).join('');
         }
 
         $('#sumTotal').text(fmt(total));
+        kembalian()
     }
 
     function processPayment() {
@@ -327,15 +365,15 @@
         const total = subtotal;
         const orderId = genId();
         const customer = $('#customerName').val().trim() || 'Customer';
-        const level = $('#levelInput').val() || 0;
         const paymentVia = $('#pembayaran').val() || 'cash';
+        const bayar = parseInt($('#bayar').val().replace(/[^0-9]/g, '')) || 0;
 
         // Susun objek data terstruktur untuk dikirim ke Backend CI4
         const payload = {
             nama: customer,
-            level: level,
             payment_via: paymentVia,
             total: total,
+            bayar: bayar,
             items: cart.map(c => ({
                 menu_id: c.id,
                 qty: c.qty
@@ -374,34 +412,21 @@
                         <span>${fmt((parseInt(c.price || c.harga) * c.qty))}</span>
                     </div>`).join('');
 
-                    document.getElementById('receiptContent').innerHTML = `
-                    <div class="r-title">CashFlow</div>
-                    <div class="r-sub">${new Date().toLocaleDateString('id-ID')} ${now}</div>
-                    <hr>
-                    <div class="r-row"><span>Customer</span><span>${customer}</span></div>
-                    <div class="r-row"><span>Level</span><span>#${level}</span></div>
-                    <div class="r-row"><span>Metode</span><span style="text-transform:uppercase">${paymentVia}</span></div>
-                    <hr>
-                    ${rows}
-                    <hr>
-                    <div class="r-row r-total"><span>TOTAL</span><span>${fmt(total)}</span></div>
-                    <hr>
-                    <div style="text-align:center;margin-top:12px;font-size:.72rem;color:#777">Thank you for your purchase!<br>Please come again 😊</div>`;
-
                     /* Reset state aplikasi */
                     cart = [];
                     if (typeof renderCart === "function") renderCart();
                     if (typeof renderProductSelector === "function") renderProductSelector();
 
                     $('#customerName').val('');
-                    $('#levelInput').val('0');
                     $('#pembayaran').val('cash');
+                    $('#bayar').val('');
+                    $('#kembalian').text('Rp 0');
                     $('#modalSearch').val('');
                     // Tutup modal belanja & tampilkan modal struk sukses pembayaran
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal'), {
-                        backdrop: false
-                    }).show();
-
+                    // bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal'), {
+                    //     backdrop: false
+                    // }).show();
+                    cetakStruk(response.transaksi_id)
                     // Fungsi opsional untuk memuat ulang riwayat tabel di halaman utama transaksi jika ada
                     if (typeof fetchTransactionHistory === "function") {
                         fetchTransactionHistory();
@@ -427,9 +452,13 @@
     }
     // 1. Fungsi untuk menarik data transaksi terbaru dari database
     function fetchTransactionHistory() {
+        const tanggalDipilih = $('#filterTanggal').val();
         $.ajax({
             url: '<?= base_url("transaction/get_all_json") ?>',
             type: 'GET',
+            data: {
+                tanggal: tanggalDipilih,
+            },
             dataType: 'json',
             success: function(data) {
                 // Perbarui data local array jika ada komponen lain yang membutuhkannya
@@ -478,7 +507,6 @@
                 <tr>
                 <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${hl(t.tanggal, query)}</td>
                 <td>${hl(t.nama || 'Customer', query)}</td>
-                <td style="color:var(--muted)">Lvl ${hl(t.level ?? 0, query)}</td>
                 <td style="font-weight:600">${fmt(t.total)}</td>
                 <td>
                     <span style="font-size:.78rem;text-transform:uppercase">
@@ -489,6 +517,7 @@
                     <div style="display:flex;gap:6px">
                     <button class="btn-sm-icon" title="View" onclick="viewTxn('${t.id}')"><i class="fa-solid fa-eye"></i></button>
                     <button class="btn-sm-icon danger" title="Void" onclick="voidTxn('${t.id}')"><i class="fa-solid fa-ban"></i></button>
+                    <button class="btn-sm-icon warning" title="Cetak Ulang" onclick="cetakStruk('${t.id}')"><i class="fa-solid fa-print"></i></button>
                     </div>
                 </td>
                 </tr>`;
@@ -559,7 +588,6 @@
                 // Isi header form dari data transaksi yang dipilih
                 if (txn) {
                     $('#customerName').val(txn.nama || '');
-                    $('#levelInput').val(txn.level || 0);
                     $('#pembayaran').val(txn.payment_via || 'cash');
                 }
 
@@ -599,7 +627,7 @@
             $modal.find('.btn-ghost[onclick="clearCart()"]').hide();
 
             // Nonaktifkan input form
-            $('#customerName, #levelInput, #pembayaran').prop('disabled', true);
+            $('#customerName, #pembayaran').prop('disabled', true);
         } else {
             // Kembalikan ke mode normal (Add / Edit)
             $modal.find('.modal-title').html('<i class="fa-solid fa-cart-plus me-2" style="color:var(--accent)"></i>Select Products &amp; Checkout');
@@ -608,7 +636,7 @@
                 .html('<i class="fa-solid fa-credit-card me-2"></i>Payment')
                 .attr('onclick', 'processPayment()');
             $modal.find('.btn-ghost').show();
-            $('#customerName, #levelInput, #pembayaran').prop('disabled', false);
+            $('#customerName, #pembayaran').prop('disabled', false);
         }
     }
 
@@ -623,7 +651,6 @@
             _applyViewModeUI(false);
             // Reset form
             $('#customerName').val('');
-            $('#levelInput').val(0);
             $('#pembayaran').val('cash');
         }
     });
@@ -667,7 +694,7 @@
     }
 
     function printReceipt() {
-        const content = document.getElementById('receiptContent').innerHTML;
+        const content = $('#receiptContent').html();
         const w = window.open('', '_blank', 'width=400,height=600');
         w.document.write(`<html><head><title>Receipt</title>
             <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans&display=swap" rel="stylesheet">
