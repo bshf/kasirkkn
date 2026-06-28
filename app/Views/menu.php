@@ -187,6 +187,7 @@
     // Mengondisikan Modal untuk mode TAMBAH BARU
     function prepareAddModal() {
         $('#crudForm')[0].reset();
+        $('.modal-title').text('TAMBAH MENU')
         $('#prodId').val('');
         $('#oldImageUrl').val('');
 
@@ -202,11 +203,12 @@
         const item = products.find(p => p.id == id);
         if (!item) return;
 
+        $('.modal-title').text('EDIT MENU')
         // Isi form modal dengan data lama yang siap diedit
         $('#prodId').val(item.id);
         $('#oldImageUrl').val(item.image_url || ''); // Menerima parameter old_image_url di Controller
         $('#newProdName').val(item.nama);
-        $('#newProdCat').val(item.kategori);
+        $('#newProdCat').val(item.kategori.toUpperCase());
         let formattedPrice = parseInt(item.harga).toLocaleString('id-ID');
         $('#newProdPrice').val(formattedPrice);
         $('#newProdImage').val(''); // Reset input file pilihan baru
@@ -262,7 +264,12 @@
 
                     // ── PERBAIKAN: Reset form dan ambil data terbaru tanpa reload halaman ──
                     $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
-                    $('#crudForm')[0].reset();
+                    if ($('#prodId').val() != '') {
+                        $('#crudForm')[0].reset();
+                        $('#addProductModal').modal('hide')
+                    } else {
+                        $('#crudForm')[0].reset();
+                    }
                     fetchProducts();
                 } else {
                     toast('Error: ' + response.message);

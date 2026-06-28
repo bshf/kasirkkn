@@ -29,4 +29,5 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('transaction/get_detail_json/(:num)', 'TransactionController::get_detail_json/$1');
     $routes->delete('transaction/delete/(:num)', 'TransactionController::delete/$1');
     $routes->get('transaction/struk/(:num)', 'TransactionController::struk/$1');
+    $routes->get('transaction/export', 'TransactionController::export');
 });

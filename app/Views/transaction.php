@@ -3,21 +3,22 @@
 <?= $this->section('content') ?>
 
 <div class="page active" id="page-transaction">
-    <div class="section-header">
-        <div>
-            <h2>Transaction</h2>
-            <p>Create and manage sales transactions</p>
+    <div class="section-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <div class="header-title">
+            <h2 class="text-uppercase m-0 fw-bold">Transaksi</h2>
+            <p class="text-muted text-uppercase small m-0 mt-1">Buat dan kelola transaksi penjualan</p>
         </div>
-        <div>
-            <button class="btn-accent" data-bs-toggle="modal" data-bs-target="#addItemModal">
-                <i class="fa-solid fa-cart-plus me-1"></i>Add Item
+
+        <div class="header-actions d-flex flex-row flex-wrap gap-2 w-100 w-md-auto">
+            <button class="btn-accent flex-grow-1 flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                <i class="fa-solid fa-cart-plus me-1"></i> Tambah Transaksi
             </button>
-            <button class="btn-accent" onclick="printerConnection.connect().then(() => alert('Printer terhubung!')).catch(e => alert(e.message))">
-            <i class="fa-solid fa-feed me-1"></i> Hubungkan Printer
+            <button class="btn-accent flex-grow-1 flex-md-grow-0" onclick="printerConnection.connect().then(() => alert('Printer terhubung!')).catch(e => alert(e.message))">
+                <i class="fa-solid fa-rss me-1"></i> Hubungkan Printer
             </button>
         </div>
     </div>
-    
+
 
     <!-- Transaction History -->
     <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
@@ -25,7 +26,7 @@
     </div>
     <div class="table-card mt-4">
         <div class="table-header">
-            <h5>Transaction History</h5>
+            <h5>Riwayat Transaksi</h5>
             <div style="display:flex;gap:8px">
                 <input class="cf-input" id="txnSearch" style="max-width:180px;padding:7px 12px" type="text" placeholder="Search…" />
                 <button class="btn-ghost" style="font-size:.75rem"><i class="fa-solid fa-filter me-1"></i>Filter</button>
@@ -96,7 +97,7 @@
                             <div class="summary-row total mb-3"><span>Total</span><span class="val" id="sumTotal">Rp 0</span></div>
                             <div class="mb-3">
                                 <label class="cf-label">Bayar</label>
-                                <input class="cf-input" id="bayar" placeholder="0" style="text-align: right;"/>
+                                <input class="cf-input" id="bayar" placeholder="0" style="text-align: right;" />
                             </div>
                             <div class="summary-row total mb-3"><span>Kembalian</span><span class="val" id="kembalian">Rp 0</span></div>
                             <div class="d-flex gap-2">
@@ -141,7 +142,7 @@
             <div class="modal-body">
                 <i class="fa-solid fa-triangle-exclamation text-warning mb-3" style="font-size: 3rem;"></i>
                 <h5>Hapus Transaksi?</h5>
-                <p class="small">Apakah Anda yakin ingin membatalkan transaksi <strong id="deleteTargetId"></strong>?</p>
+                <p class="small">Apakah Anda yakin ingin membatalkan transaksi ini?</p>
             </div>
             <div class="d-flex gap-2 px-3 pb-2">
                 <button type="button" class="btn-ghost w-50" data-bs-dismiss="modal">Batal</button>
@@ -184,6 +185,7 @@
     $('#bayar').on('input', function() {
         kembalian();
     });
+
     function kembalian() {
         let totalText = $('#sumTotal').text();
         let total = parseInt(totalText.replace(/[^0-9]/g, '')) || 0;
@@ -195,9 +197,10 @@
 
         $('#kembalian').text('Rp ' + kembalian.toLocaleString('id-ID'));
     }
+
     function kembalian() {
         let inputVal = $('#bayar').val().replace(/[^0-9]/g, '');
-        
+
         let bayar = parseInt(inputVal) || 0;
 
         if (inputVal !== '') {
@@ -247,25 +250,25 @@
                     <div class="p-name">${p.nama}</div>
                     <div class="p-price">${fmt(p.harga)}</div>
                     <div class="qty-ctrl mt-2">
-                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, -1)">−</button>
+                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyTransaction(${p.id}, -1)">−</button>
                     <span class="qty-num text-dark" id="modal-qty-${p.id}">${qty}</span>
-                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyProductQty(${p.id}, 1)">+</button>
+                    <button class="qty-btn" ${viewMode ? 'disabled style="opacity:.4"' : ''} onclick="modifyTransaction(${p.id}, 1)">+</button>
                     </div>
                 </div>`;
         }).join('');
     }
 
-    function modifyProductQty(productId, change) {
+    function modifyTransaction(transId, change) {
+        console.log('disdiasd');
         if (viewMode) return; // blokir perubahan saat mode view
-        const product = products.find(p => p.id == productId);
-        console.log('product', products, product, productId)
+        const product = products.find(p => p.id == transId);
         if (!product) return;
 
-        const existing = cart.find(c => c.id == productId);
+        const existing = cart.find(c => c.id == transId);
         if (existing) {
             existing.qty += change;
             if (existing.qty <= 0) {
-                cart = cart.filter(c => c.id != productId);
+                cart = cart.filter(c => c.id != transId);
             }
         } else if (change > 0) {
             cart.push({
@@ -276,8 +279,8 @@
         }
 
         // Update counter display inside modal grid directly
-        const finalItem = cart.find(c => c.id == productId);
-        $(`#modal-qty-${productId}`).text(finalItem ? finalItem.qty : 0);
+        const finalItem = cart.find(c => c.id == transId);
+        $(`#modal-qty-${transId}`).text(finalItem ? finalItem.qty : 0);
 
         updateSummary();
     }
@@ -358,7 +361,7 @@
 
     function processPayment() {
         if (cart.length === 0) {
-            toast('Cart is empty!');
+            toast('Pilih Menu!');
             return;
         }
         const subtotal = cart.reduce((s, c) => s + c.harga * c.qty, 0);
@@ -395,10 +398,10 @@
                 $('.mt-auto .btn-accent').prop('disabled', true).text('Processing...');
             },
             success: function(response) {
+                $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
                 if (response.status === 'success') {
                     toast(response.message);
 
-                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
                     // Ambil waktu realtime saat ini untuk cetak struk nota visual
                     const now = new Date().toLocaleTimeString('id-ID', {
                         hour: '2-digit',
@@ -421,7 +424,9 @@
                     $('#pembayaran').val('cash');
                     $('#bayar').val('');
                     $('#kembalian').text('Rp 0');
+                    $('#sumTotal').text('Rp 0');
                     $('#modalSearch').val('');
+                    $('#sumActiveItems').html('')
                     // Tutup modal belanja & tampilkan modal struk sukses pembayaran
                     // bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal'), {
                     //     backdrop: false
@@ -441,7 +446,19 @@
                 }
             },
             error: function(xhr) {
-                toast('Failed to process payment. Server error.');
+                // 1. Ambil response JSON dari server jika ada
+                let response = xhr.responseJSON;
+
+                // 2. Cek pesan error dari server, jika tidak ada pakai pesan default
+                let errorMessage = (response && response.message) ? response.message : 'Failed to process payment. Server error.';
+                toast(errorMessage);
+
+                // 3. Perbarui token CSRF dengan token baru yang dikirim server saat error
+                if (response && response.token) {
+                    $('meta[name="X-CSRF-TOKEN"]').attr('content', response.token);
+                }
+
+                // 4. Log error asli ke konsol untuk kebutuhan debugging
                 console.error(xhr.responseText);
             },
             complete: function() {
@@ -524,24 +541,6 @@
         }).join('');
     }
 
-    function renderTxnHistory() {
-        const tbody = document.getElementById('txnHistoryBody');
-        tbody.innerHTML = [...transactions].reverse().map(t => `
-        <tr>
-        <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem">${t.id}</td>
-        <td>${t.customer}</td>
-        <td style="color:var(--muted)">${t.items.length} item(s)</td>
-        <td style="font-weight:600">${fmt(t.total)}</td>
-        <td><span style="font-size:.78rem"><i class="fa-solid fa-${t.payment === 'cash' ? 'money-bill-wave' : t.payment === 'Card' ? 'credit-card' : 'wallet'} me-1" style="color:var(--muted)"></i>${t.payment}</span></td>
-        <td>
-            <div style="display:flex;gap:6px">
-            <button class="btn-sm-icon" title="View" onclick="viewTxn('${t.id}')"><i class="fa-solid fa-eye"></i></button>
-            <button class="btn-sm-icon danger" title="Void" onclick="voidTxn('${t.id}')"><i class="fa-solid fa-ban"></i></button>
-            </div>
-        </td>
-        </tr>`).join('');
-    }
-
     // ── VIEW TRANSACTION ──────────────────────────────────────────────────
     // Mode: 'view'  → buka modal dalam mode lihat saja (tombol Payment diganti Close)
     // Alur: fetch detail → isi cart dari transaksidetail → render grid semua menu
@@ -589,6 +588,7 @@
                 if (txn) {
                     $('#customerName').val(txn.nama || '');
                     $('#pembayaran').val(txn.payment_via || 'cash');
+                    $('#bayar').val(txn.bayar);
                 }
 
                 // Render ulang grid produk — qty otomatis diambil dari cart
@@ -651,6 +651,7 @@
             _applyViewModeUI(false);
             // Reset form
             $('#customerName').val('');
+            $('#bayar').val('');
             $('#pembayaran').val('cash');
         }
     });

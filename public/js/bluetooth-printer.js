@@ -14,13 +14,6 @@
  * (penerus esc-pos-encoder, support format ESC/POS & StarPRNT)
  */
 
-// Beberapa printer thermal BLE umumnya mengekspos salah satu dari UUID generik ini
-// untuk "Serial Port Profile over BLE". Karena tiap merk printer (Goojprt, Xprinter,
-// EPPOS, dll) kadang beda, kita pakai filter yang menerima SEMUA device dulu
-// (acceptAllDevices) lalu nanti baru dicoba beberapa service UUID yang umum.
-// Kalau printer Anda punya UUID spesifik, sebaiknya cari di manual/datasheet-nya
-// dan masukkan ke daftar SERVICE_UUIDS supaya proses scan lebih cepat & akurat.
-
 const SERVICE_UUIDS_CANDIDATES = [
     '000018f0-0000-1000-8000-00805f9b34fb', // umum dipakai printer thermal generic BLE
     '0000ffe0-0000-1000-8000-00805f9b34fb', // varian lain yang sering dipakai (HM-10 style module)
@@ -149,7 +142,6 @@ async function cetakStruk(transaksiId) {
         const res = await fetch('transaction/struk/' + transaksiId);
         const data = await res.json();
 
-        console.log(data)
         if (!data.success) {
             setStatus('Gagal: ' + data.message);
             return;
@@ -163,23 +155,13 @@ async function cetakStruk(transaksiId) {
 
         // 3. Encode struk jadi bytes ESC/POS
         setStatus('Menyiapkan struk...');
-        // 1. Fungsi bantuan untuk membuat teks rata kiri-kanan secara manual
-        // 1. Tambahkan margin 2 spasi di dalam fungsi bantuan ini
-        // 1. Fungsi kolom disesuaikan untuk kertas 80mm (totalKolom = 42)
-        // 1. Fungsi kolom dimaksimalkan untuk kapasitas penuh kertas 80mm (totalKolom = 48)
-        // 1. Inisialisasi printer dengan mendefinisikan total kolom kertas 80mm secara eksplisit
         let encoder = new ReceiptPrinterEncoder({
-            columns: 48 // Kita set kapasitas kertas ke 48 karakter agar area cetak maksimal
+            columns: 48 
         });
 
-        // 2. Fungsi hitung spasi dinamis agar teks KANAN dijamin lurus sejajar di ujung kertas
         function buatBarisRapi(kiri, kanan, totalKolom = 48) {
-            let marginLeft = "    "; // Margin kiri tetap 4 spasi biar tidak mepet
-
-            // Hitung berapa panjang maksimal teks yang bisa ditampung di antara margin
+            let marginLeft = "    "; 
             let areaTeks = totalKolom - marginLeft.length;
-
-            // Hitung sisa spasi tengah secara dinamis
             let sisaSpasi = areaTeks - (kiri.length + kanan.length);
 
             if (sisaSpasi > 0) {

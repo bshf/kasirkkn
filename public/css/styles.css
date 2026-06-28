@@ -296,9 +296,27 @@ a {
 /* ── SECTION HEADER ── */
 .section-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column; /* Default HP: atas-bawah */
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+/* Pembungkus Judul */
+.section-header > div:first-child {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pembungkus Tombol */
+.section-header > div:last-child {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.section-header > div:last-child .btn-accent {
+  flex: 1;
+  white-space: nowrap;
 }
 
 .section-header h2 {
@@ -306,14 +324,35 @@ a {
   font-size: 1.5rem;
   font-weight: 800;
   color: var(--text);
+  margin: 0;
 }
 
 .section-header p {
   font-size: .82rem;
   color: var(--muted);
   margin-top: 2px;
+  margin-bottom: 0;
 }
 
+/* ==========================================================================
+   MEDIA QUERY: Untuk Layar Desktop / Laptop (>= 768px)
+   ========================================================================== */
+@media (min-width: 768px) {
+  .section-header {
+    flex-direction: row !important; /* Paksa kiri-kanan */
+    justify-content: space-between !important;
+    align-items: center !important; /* Paksa rata tengah vertikal */
+  }
+
+  .section-header > div:last-child {
+    width: auto !important; /* Lebar tombol kembali normal */
+    align-self: center !important; /* Kunci posisi vertikal tombol di tengah */
+  }
+
+  .section-header > div:last-child .btn-accent {
+    flex: none !important;
+  }
+}
 /* ── STAT CARDS ── */
 .stat-card {
   background: var(--card);

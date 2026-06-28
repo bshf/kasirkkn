@@ -7,11 +7,38 @@
             <h2>Overview</h2>
             <p id="todayDate"></p>
         </div>
-        <button class="btn-accent"><i class="fa-solid fa-download me-1"></i>Export</button>
+        <button class="btn-accent" data-bs-toggle="modal" data-bs-target="#exportModal">
+            <i class="fa-solid fa-download me-1"></i>Export
+        </button>
+
     </div>
 
     <!-- Stats -->
 
+    <!-- Modal Export -->
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form action="<?= base_url('transaction/export') ?>" method="get">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Export Laporan Transaksi</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="bulan" class="form-label">Pilih Bulan</label>
+                        <input type="month" class="form-control" id="bulan" name="bulan"
+                            value="<?= date('Y-m') ?>" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn-accent">
+                            <i class="fa-solid fa-download me-1"></i>Export
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="stat-card yellow">
@@ -39,10 +66,10 @@
         </div>
         <div class="col-6 col-lg-3">
             <div class="stat-card red">
-                <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div class="stat-value" id="statLowStock"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
-                <div class="stat-label">Low Stock Items</div>
-                <div class="stat-change down"><i class="fa-solid fa-arrow-trend-down"></i> Needs restock</div>
+                <div class="stat-icon"><i class="fa-solid fa-trophy"></i></div>
+                <div class="stat-value" id="terlaris"><span class="text-muted" style="font-size:1rem">Loading…</span></div>
+                <div class="stat-label">Menu Terlaris Hari Ini</div>
+                <div class="stat-change down" id="menuTerlaris"><i class="fa-solid fa-arrow-trend-down"></i></div>
             </div>
         </div>
     </div>
@@ -95,12 +122,14 @@
     <div class="table-card">
         <div class="table-header">
             <h5>Transaksi Terbaru</h5>
-            <button class="btn-ghost" style="font-size:.75rem" onclick="navigate('transaction')">Lihat Semua</button>
+            <a href="<?= base_url('transaction') ?>" class="btn-ghost" style="font-size:.75rem; text-decoration: none; display: inline-block;">
+                Lihat Semua
+            </a>
         </div>
         <div class="table-responsive">
             <table class="dash-table">
                 <thead>
-                     <tr>
+                    <tr>
                         <th>Tanggal</th>
                         <th>Customer</th>
                         <th>Total</th>
@@ -120,11 +149,14 @@
     // fmt() diasumsikan sudah didefinisikan di layouts/master (global helper)
 
     // ─── INIT ─────────────────────────────────────────────────────────────
-    $(document).ready(function () {
+    $(document).ready(function() {
         // Tampilkan tanggal hari ini
         const d = new Date();
         $('#todayDate').text(d.toLocaleDateString('id-ID', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         }));
 
         // Muat semua data dashboard secara paralel via AJAX
@@ -140,7 +172,7 @@
             url: '<?= base_url("dashboard/get_stats") ?>',
             type: 'GET',
             dataType: 'json',
-            success: function (data) {
+            success: function(data) {
                 // Revenue Today
                 $('#statRevenue').text(fmt(data.revenue_today));
                 $('#statRevenueChange')
@@ -161,9 +193,12 @@
                 $('#statProducts').text(data.total_products);
 
                 // Low Stock
-                $('#statLowStock').text(data.low_stock_count);
+                $('#terlaris').text(data.terlaris.total_qty);
+                $('#menuTerlaris').text(data.terlaris.nama_menu);
             },
-            error: function () { console.error('Gagal memuat stats dashboard.'); }
+            error: function() {
+                console.error('Gagal memuat stats dashboard.');
+            }
         });
     }
 
@@ -173,22 +208,22 @@
             url: '<?= base_url("dashboard/get_weekly_chart") ?>',
             type: 'GET',
             dataType: 'json',
-            success: function (data) {
+            success: function(data) {
                 // data = [{ day: 'Mon', label: '2026-06-09', total: 5200000 }, ...]
-                const vals   = data.map(d => d.total);
-                const max    = Math.max(...vals) || 1;
+                const vals = data.map(d => d.total);
+                const max = Math.max(...vals) || 1;
                 const todayIdx = data.length - 1; // hari terakhir = hari ini
 
-                const chart  = document.getElementById('barChart');
+                const chart = document.getElementById('barChart');
                 const labels = document.getElementById('barLabels');
-                chart.innerHTML  = '';
+                chart.innerHTML = '';
                 labels.innerHTML = '';
 
-                data.forEach(function (d, i) {
-                    const pct  = (d.total / max) * 100;
-                    const disp = d.total >= 1000000
-                        ? (d.total / 1000000).toFixed(1) + 'M'
-                        : (d.total >= 1000 ? (d.total / 1000).toFixed(0) + 'K' : d.total);
+                data.forEach(function(d, i) {
+                    const pct = (d.total / max) * 100;
+                    const disp = d.total >= 1000000 ?
+                        (d.total / 1000000).toFixed(1) + 'M' :
+                        (d.total >= 1000 ? (d.total / 1000).toFixed(0) + 'K' : d.total);
 
                     const wrap = document.createElement('div');
                     wrap.className = 'bar-wrap';
@@ -201,11 +236,13 @@
 
                     const lbl = document.createElement('span');
                     lbl.style.cssText = 'font-size:.65rem;color:var(--muted);flex:1;text-align:center';
-                    lbl.textContent   = d.day;
+                    lbl.textContent = d.day;
                     labels.appendChild(lbl);
                 });
             },
-            error: function () { console.error('Gagal memuat chart mingguan.'); }
+            error: function() {
+                console.error('Gagal memuat chart mingguan.');
+            }
         });
     }
 
@@ -215,10 +252,10 @@
             url: '<?= base_url("dashboard/get_payment_breakdown") ?>',
             type: 'GET',
             dataType: 'json',
-            success: function (data) {
+            success: function(data) {
                 // data = { cash: { count: 70, pct: 70 }, qris: { count: 30, pct: 30 } }
-                const cashPct = data.cash  ? data.cash.pct  : 0;
-                const qrisPct = data.qris  ? data.qris.pct  : 0;
+                const cashPct = data.cash ? data.cash.pct : 0;
+                const qrisPct = data.qris ? data.qris.pct : 0;
 
                 $('#pbCashPct').text(cashPct + '%');
                 $('#pbCashBar').css('width', cashPct + '%');
@@ -227,7 +264,12 @@
 
                 // Top Category
                 if (data.top_categories && data.top_categories.length) {
-                    const emojis = { 'Minuman': '☕', 'Makanan': '🍔', 'Dessert': '🍰', 'Snack': '🍿' };
+                    const emojis = {
+                        'Minuman': '☕',
+                        'Makanan': '🍔',
+                        'Dessert': '🍰',
+                        'Snack': '🍿'
+                    };
                     $('#topCategoryList').html(
                         data.top_categories.slice(0, 3).map(c => `
                             <div style="display:flex;justify-content:space-between">
@@ -237,7 +279,9 @@
                     );
                 }
             },
-            error: function () { console.error('Gagal memuat payment breakdown.'); }
+            error: function() {
+                console.error('Gagal memuat payment breakdown.');
+            }
         });
     }
 
@@ -247,7 +291,7 @@
             url: '<?= base_url("dashboard/get_recent_transactions") ?>',
             type: 'GET',
             dataType: 'json',
-            success: function (list) {
+            success: function(list) {
                 const tbody = document.getElementById('recentTxnBody');
                 if (!list || list.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">Belum ada transaksi hari ini.</td></tr>`;
@@ -268,7 +312,9 @@
                         </tr>`;
                 }).join('');
             },
-            error: function () { console.error('Gagal memuat recent transactions.'); }
+            error: function() {
+                console.error('Gagal memuat recent transactions.');
+            }
         });
     }
 </script>
